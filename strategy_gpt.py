@@ -1,9 +1,10 @@
 import backtrader as bt
 import numpy as np
 from datetime import datetime
+from Indicators import Indicators
 
 
-class TurtleStrategy(bt.Strategy):
+class Turtles(bt.Strategy):
     params = (
         ('donchian_window_entry', 20),  # Период для входа
         ('donchian_window_exit', 10),  # Период для выхода
@@ -58,36 +59,3 @@ class TurtleStrategy(bt.Strategy):
                 self.last_trade_was_profitable = True
             else:
                 self.last_trade_was_profitable = False
-
-
-# Создание экземпляра Cerebro для запуска стратегии
-cerebro = bt.Cerebro()
-cerebro.addstrategy(TurtleStrategy)
-
-# Добавление данных (например, Yahoo Finance или CSV файл)
-data = bt.feeds.YahooFinanceData(dataname='AAPL',
-                                 fromdate=datetime(2018, 1, 1),
-                                 todate=datetime(2020, 1, 1))
-cerebro.adddata(data)
-
-# Настройка начального капитала
-cerebro.broker.setcash(100000)
-
-# Добавление анализаторов
-cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="trade_analyzer")
-cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="sharpe_ratio")
-
-# Запуск Backtrader
-results = cerebro.run()
-
-# Получение результатов анализаторов
-trade_analyzer = results[0].analyzers.trade_analyzer.get_analysis()
-sharpe_ratio = results[0].analyzers.sharpe_ratio.get_analysis()
-
-# Вывод статистики
-print('Конечный баланс: %.2f' % cerebro.broker.getvalue())
-print('Всего сделок:', trade_analyzer.total.closed)
-print('Профитных сделок:', trade_analyzer.won.total)
-print('Убыточных сделок:', trade_analyzer.lost.total)
-print('Процент прибыльных сделок: %.2f%%' % (trade_analyzer.won.total / trade_analyzer.total.closed * 100))
-print('Sharpe Ratio:', sharpe_ratio['sharperatio'])
